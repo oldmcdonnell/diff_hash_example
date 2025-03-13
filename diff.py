@@ -1,27 +1,36 @@
 import hashlib
 
-
 def hash_file(filepath):
-    hasher = hashlib.sha256()  # Create a SHA-256 hash object
-    with open(filepath, "rb") as f:  # Open file in binary mode
-        for chunk in iter(lambda: f.read(4096), b""):  # Read in chunks of 4096 bytes
-            hasher.update(chunk)  # Update hash with chunk
-    return hasher.hexdigest()  # Return the final hash as a hex string
+    """Returns the SHA-256 hash of a given file."""
+    try:
+        hasher = hashlib.sha256()
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hasher.update(chunk)
+        return hasher.hexdigest()
+    except FileNotFoundError as e:
+        print(f"❌ Error: {filepath} not found!")
+        return "" # empty string
 
-# Define file paths
-original_filepath = "original.txt"
-modified_filepath = "modified.txt"
+def compare_files(file1, file2):
+    """Compares two files by their SHA-256 hashes."""
+    hash1 = hash_file(file1)
+    hash2 = hash_file(file2)
 
-# Compute hashes
-original_hash = hash_file(original_filepath)
-modified_hash = hash_file(modified_filepath)
+    if not hash1 or not hash2:
+        return
 
-# Print hashes
-print(f"Original Hash: {original_hash}")
-print(f"Modified Hash: {modified_hash}")
+    print(f"Original Hash: {hash1}")
+    print(f"Modified Hash: {hash2}")
 
-# Compare hashes
-if original_hash == modified_hash:
-    print("Files are identical.")
-else:
-    print("Files have been modified.")
+    if hash1 == hash2:
+        print("✅ Files are identical.")
+    else:
+        print("❌ Files have been modified.")
+
+if __name__ == "__main__":
+    import sys
+    if len(sys.argv) < 3:
+        print("Usage: python diff.py <original_file> <modified_file>")
+    else:
+        compare_files(sys.argv[1], sys.argv[2])
